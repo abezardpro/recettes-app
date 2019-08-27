@@ -1,26 +1,52 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from 'react';
+import Header from './components/Header'
+import Admin from './components/Admin'
+import Card from './components/Card'
+import './App.scss';
+import recettes from './recettes'
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+// firebase
+import base from './base'
+
+
+class App extends Component {
+
+  state = {
+    pseudo: this.props.match.params.pseudo,
+    recettes: {}
+  }
+
+  componentDidMount() {
+    this.ref = base.syncState(`/${this.state.pseudo}/recettes`, {
+      context: this,
+      state: 'recettes'
+    })
+  }
+
+
+  /**
+   * Ferme la connexion avec Firebase a la fermeture de l'app
+   */
+  componentWillUnmount() {
+    base.removeBinding(this.ref)
+  }
+
+  chargerExemple = () => this.setState({ recettes })
+
+  render() {
+    const cards = Object.keys(this.state.recettes).map(key => <Card key={key} details={this.state.recettes[key]}></Card>)
+    return (
+      <div className="box">
+        <Header pseudo={this.state.pseudo} />
+        <div className='cards'>
+          <div className='card'>
+            { cards }
+          </div>
+        </div>
+        <Admin chargerExemple={this.chargerExemple} />
+      </div>
+    )
+  }
 }
 
 export default App;
